@@ -1,307 +1,503 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>XYZ Technologies — Kasir PRO</title>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <link rel="stylesheet" href="deploy.css">
+  <title>Kasir PRO — XYZ Technologies</title>
+</head>
+<body>
 <style>
 :root{
   --bg:#0f172a;
   --panel:#111827;
-  --card:#1f2937;
+  --card:#0b1220;
+  --line:#1f2937;
+  --text:#e5e7eb;
+  --muted:#9ca3af;
   --accent:#2563eb;
+  --accent2:#f59e0b;
+  --danger:#ef4444;
 }
-body{margin:0;font-family:Segoe UI,Arial;background:var(--bg);color:#fff}
-.container{max-width:1200px;margin:auto;padding:16px}
 
-h1{margin:0 0 10px}
+/* ===== GLOBAL ===== */
+*{box-sizing:border-box}
 
-/* TABS */
-.tabs{display:flex;gap:8px;margin-bottom:16px}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;
+  background:var(--bg);
+  color:var(--text)
+}
+
+header{
+  padding:14px 16px;
+  border-bottom:1px solid var(--line);
+  background:#020617;
+  position:sticky;
+  top:0;
+  z-index:5
+}
+
+header h1{margin:0;font-size:18px;letter-spacing:.5px}
+
+.tabs{
+  display:flex;
+  gap:8px;
+  padding:10px;
+  border-bottom:1px solid var(--line);
+  background:#020617;
+  position:sticky;
+  top:52px;
+  z-index:4
+}
+
 .tabs button{
-  flex:1;padding:12px;border:0;border-radius:8px;
-  background:#1f2937;color:#fff;font-weight:700;cursor:pointer
+  background:var(--panel);
+  color:var(--text);
+  border:1px solid var(--line);
+  padding:8px 12px;
+  border-radius:10px;
+  cursor:pointer
 }
-.tabs button.active{background:var(--accent)}
 
-.tab{display:none}.tab.active{display:block}
-
-/* FORM */
-.form{background:var(--panel);padding:12px;border-radius:10px;display:grid;gap:8px;margin-bottom:12px}
-input,button{padding:10px;border-radius:8px;border:0}
-button.primary{background:var(--accent);color:#fff;font-weight:700}
-
-/* GRID */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
-.card{background:var(--card);padding:10px;border-radius:10px;text-align:center;cursor:pointer;position:relative}
-.price{color:#f59e0b;font-weight:700}
-.del{position:absolute;top:6px;right:6px;color:#ef4444;cursor:pointer}
-
-/* CART */
-.cart{background:var(--panel);padding:12px;border-radius:12px;margin-top:12px}
-table{width:100%;border-collapse:collapse}
-th,td{padding:6px;border-bottom:1px solid #374151;text-align:left}
-
-/* INVOICE */
-.invoice{
-  background:#fff;color:#000;padding:30px;border-radius:10px;
-  max-width:900px;margin:auto;font-size:14px
+.tabs button.active{
+  background:var(--accent);
+  border-color:transparent
 }
-.inv-header{display:flex;justify-content:space-between;border-bottom:2px solid #ddd;padding-bottom:10px;margin-bottom:10px}
-.inv-title{font-size:34px;font-weight:800}
-.inv-table{width:100%;border-collapse:collapse;margin-top:10px}
-.inv-table th{background:#374151;color:#fff;padding:8px}
-.inv-table td{padding:8px;border-bottom:1px solid #ddd}
-.footer{text-align:center;margin-top:20px;font-size:12px}
 
+.container{padding:12px}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:10px
+}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:10px;
+  display:flex;
+  flex-direction:column;
+  gap:6px
+}
+
+.card h4{margin:0;font-size:14px}
+.price{font-weight:700}
+
+/* ===== BUTTON ===== */
+.btn{
+  border:none;
+  border-radius:10px;
+  padding:8px 10px;
+  cursor:pointer
+}
+
+.btn.primary{background:var(--accent);color:#fff}
+.btn.warn{background:var(--accent2);color:#000}
+.btn.danger{background:var(--danger);color:#fff}
+.btn.ghost{background:transparent;border:1px dashed var(--line);color:var(--muted)}
+
+/* ===== FORM ===== */
+.form{display:grid;gap:8px;margin-bottom:12px}
+
+.form input{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:8px;
+  color:var(--text)
+}
+
+.flex{display:flex;gap:8px;flex-wrap:wrap}
+.hidden{display:none}
+
+/* ===== TABLE GLOBAL (KASIR) ===== */
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:var(--card);
+  border-radius:12px;
+  overflow:hidden
+}
+
+th,td{
+  padding:8px;
+  border-bottom:1px solid var(--line);
+  font-size:13px
+}
+
+th{
+  background:#020617;
+  text-align:left
+}
+
+tfoot td{font-weight:700}
+.right{margin-left:auto}
+
+/* ===================================================== */
+/* 🔥 INVOICE AREA — PUTIH TOTAL */
+/* ===================================================== */
+
+.invoice-wrap{
+  max-width:420px;
+  margin:0 auto;
+  background:#ffffff;
+  color:#000000;
+  border-radius:16px;
+  padding:16px;
+  box-shadow:none;
+}
+
+/* PAKSA SEMUA TEKS INVOICE HITAM */
+.invoice-wrap,
+.invoice-wrap *{
+  color:#000 !important;
+}
+
+/* TABEL KHUSUS INVOICE → PUTIH */
+.invoice-wrap table{
+  background:#ffffff !important;
+  border-collapse:collapse;
+}
+
+.invoice-wrap th{
+  background:#ffffff !important;
+  border-bottom:1px solid #000;
+}
+
+.invoice-wrap td{
+  border-bottom:1px solid #000;
+}
+
+/* HEADER INVOICE */
+.inv-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px
+}
+
+.inv-title{
+  font-size:20px;
+  font-weight:800
+}
+
+.inv-sub{
+  font-size:12px;
+  color:#000
+}
+
+/* GARIS PEMISAH */
+.inv-line{
+  border-top:1px solid #000;
+  margin:10px 0
+}
+
+.inv-total{
+  font-size:18px;
+  font-weight:800
+}
+
+.inv-footer{
+  font-size:12px;
+  text-align:center;
+  margin-top:10px
+}
+
+.toolbar{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-bottom:10px
+}
+
+.note{font-size:12px;color:var(--muted)}
+
+/* ===== PRINT MODE ===== */
 @media print{
-  .tabs,.no-print{display:none!important}
-  body{background:#fff}
+  header,.tabs,.toolbar,.note{display:none!important}
+  body{background:#ffffff}
+  .invoice-wrap{box-shadow:none;border:none}
 }
 </style>
-</head>
+<header>
+  <h1>XYZ Technologies — Kasir PRO</h1>
+</header>
 
-<body>
+<div class="tabs">
+  <button id="tabBtnMenu" class="active">Menu Barang</button>
+  <button id="tabBtnKasir">Kasir</button>
+  <button id="tabBtnInvoice">Invoice</button>
+</div>
+
 <div class="container">
 
-<h1>XYZ Technologies — Kasir PRO</h1>
-
-<div class="tabs no-print">
-  <button class="active" data-tab="menu">Barang</button>
-  <button data-tab="kasir">Kasir</button>
-  <button data-tab="invoice">Invoice</button>
-  <button data-tab="riwayat">Riwayat</button>
-</div>
-
-<!-- ===== BARANG ===== -->
-<div id="menu" class="tab active">
-  <div class="form">
-    <input id="namaBarang" placeholder="Nama barang">
-    <input id="hargaBarang" type="number" placeholder="Harga">
-    <button class="primary" onclick="tambahBarang()">Tambah Barang</button>
-  </div>
-  <div id="daftarBarang" class="grid"></div>
-</div>
-
-<!-- ===== KASIR ===== -->
-<div id="kasir" class="tab">
-  <input id="namaKasir" placeholder="Nama Kasir">
-  <input id="namaPelanggan" placeholder="Nama Pelanggan">
-  <div id="barangKasir" class="grid"></div>
-
-  <div class="cart">
-    <table>
-      <thead><tr><th>Barang</th><th>Harga</th><th>Qty</th><th>Subtotal</th></tr></thead>
-      <tbody id="cartBody"></tbody>
-    </table>
-    <h3>Total: <span id="totalHarga">Rp 0</span></h3>
-    <input id="uangPembeli" type="number" placeholder="Uang Pembeli">
-    <div>Kembalian: <b id="kembalian">Rp 0</b></div>
-    <button class="primary" onclick="buatInvoice()">BUAT INVOICE</button>
-  </div>
-</div>
-
-<!-- ===== INVOICE ===== -->
-<div id="invoice" class="tab">
-  <div id="invoiceBox"></div>
-  <div class="no-print" style="text-align:center;margin-top:12px">
-    <button onclick="window.print()">Export PDF</button>
-    <button onclick="exportJPG()">Export JPG</button>
-  </div>
-</div>
-
-<!-- ===== RIWAYAT ===== -->
-<div id="riwayat" class="tab">
-  <h3>Riwayat Transaksi</h3>
-  <div id="historyList"></div>
-</div>
-
-</div>
-
-<!-- ===== HTML2CANVAS INLINE (MINIFIED) ===== -->
-<script>
-/* html2canvas mini inline */
-</script>
-
-<script>
-const rupiah=n=>"Rp "+(n||0).toLocaleString("id-ID");
-const getBarang=()=>JSON.parse(localStorage.getItem("barang")||"[]");
-const setBarang=d=>localStorage.setItem("barang",JSON.stringify(d));
-
-/* BARANG */
-function tambahBarang(){
-  const nama=namaBarang.value.trim();
-  const harga=+hargaBarang.value;
-  if(!nama||!harga) return;
-  const d=getBarang();
-  d.push({id:Date.now(),nama,harga});
-  setBarang(d);
-  renderBarang();
-}
-
-function renderBarang(){
-  const list=getBarang();
-  daftarBarang.innerHTML="";
-  barangKasir.innerHTML="";
-  list.forEach(b=>{
-    daftarBarang.innerHTML+=`
-      <div class="card">
-        <span class="del" onclick="hapusBarang(${b.id})">×</span>
-        ${b.nama}<br><span class="price">${rupiah(b.harga)}</span>
-      </div>`;
-    barangKasir.innerHTML+=`
-      <div class="card" onclick="addCart(${b.id})">
-        ${b.nama}<br><span class="price">${rupiah(b.harga)}</span>
-      </div>`;
-  });
-}
-
-function hapusBarang(id){
-  setBarang(getBarang().filter(b=>b.id!==id));
-  renderBarang();
-}
-
-/* CART */
-let cart={};
-function addCart(id){
-  const b=getBarang().find(x=>x.id===id);
-  if(!cart[id]) cart[id]={...b,qty:0};
-  cart[id].qty++;
-  renderCart();
-}
-
-function renderCart(){
-  cartBody.innerHTML="";
-  let total=0;
-  Object.values(cart).forEach(i=>{
-    const sub=i.qty*i.harga;
-    total+=sub;
-    cartBody.innerHTML+=`<tr><td>${i.nama}</td><td>${rupiah(i.harga)}</td><td>${i.qty}</td><td>${rupiah(sub)}</td></tr>`;
-  });
-  totalHarga.textContent=rupiah(total);
-  const bayar=+uangPembeli.value||0;
-  kembalian.textContent=rupiah(bayar-total);
-}
-uangPembeli.oninput=renderCart;
-
-/* INVOICE */
-function buatInvoice(){
-  const items=Object.values(cart);
-  if(!items.length) return;
-
-  const total=items.reduce((a,b)=>a+b.qty*b.harga,0);
-  const bayar=+uangPembeli.value||0;
-
-  const data={
-    nomor:"INV-"+Date.now(),
-    tanggal:new Date().toLocaleString("id-ID"),
-    pelanggan:namaPelanggan.value||"-",
-    kasir:namaKasir.value||"Kasir",
-    items,total,bayar,kembali:bayar-total
-  };
-
-  localStorage.setItem("lastInvoice",JSON.stringify(data));
-
-  const hist=JSON.parse(localStorage.getItem("history")||"[]");
-  hist.push(data);
-  localStorage.setItem("history",JSON.stringify(hist));
-
-  tampilInvoice();
-  renderHistory();
-  switchTab("invoice");
-  cart={};renderCart();
-}
-
-function tampilInvoice(){
-  const d=JSON.parse(localStorage.getItem("lastInvoice")||"null");
-  if(!d) return;
-
-  invoiceBox.innerHTML=`
-  <div class="invoice" id="invoiceArea">
-    <div class="inv-header">
-      <div>
-        <div class="inv-title">XYZ Technology</div>
-        Make your life easy
+  <!-- TAB MENU BARANG -->
+  <section id="tabMenu">
+    <div class="form">
+      <input id="namaBarang" type="text" placeholder="Nama barang (wajib)">
+      <input id="hargaBarang" type="number" placeholder="Harga (wajib)">
+      <div class="flex">
+        <button class="btn primary" id="btnTambah">Tambah Barang</button>
+        <button class="btn ghost" id="btnBatalEdit" style="display:none">Batal Edit</button>
       </div>
-      <div>
-        <h2>INVOICE</h2>
-        ${d.nomor}<br>${d.tanggal}
+      <div class="note">Klik tombol ✏️ pada kartu untuk edit nama & harga.</div>
+    </div>
+    <div id="listBarang" class="grid"></div>
+  </section>
+
+  <!-- TAB KASIR -->
+  <section id="tabKasir" class="hidden">
+    <div class="grid" id="gridKasir"></div>
+    <h3>Keranjang</h3>
+    <table>
+      <thead>
+        <tr><th>Nama</th><th>Harga</th><th>Qty</th><th>Subtotal</th></tr>
+      </thead>
+      <tbody id="tbodyCart"></tbody>
+      <tfoot>
+        <tr><td colspan="3">TOTAL</td><td id="totalAkhir">Rp 0</td></tr>
+      </tfoot>
+    </table>
+    <div class="form" style="margin-top:10px">
+      <input id="namaKasir" type="text" placeholder="Nama Kasir (default Kasir 1)">
+      <input id="uangPembeli" type="number" placeholder="Uang Pembeli">
+      <div id="kembalian">Kembalian: Rp 0</div>
+      <div class="flex">
+        <button class="btn warn" id="btnBuatInvoice">BUAT INVOICE</button>
+        <button class="btn danger" id="btnClearCart">Hapus Data Kasir</button>
       </div>
     </div>
+  </section>
 
-    Pelanggan: ${d.pelanggan}<br>
-    Kasir: ${d.kasir}
+  <!-- TAB INVOICE -->
+  <section id="tabInvoice" class="hidden">
+    <div class="toolbar">
+      <button class="btn primary" onclick="window.print()">Print</button>
+      <button class="btn warn" onclick="exportToImage()">Export JPG</button>
+      <button class="btn danger" id="btnHapusInvoice">Hapus Data Invoice</button>
+    </div>
 
-    <table class="inv-table">
-      <tr><th>No</th><th>Item</th><th>Qty</th><th>Harga</th><th>Total</th></tr>
-      ${d.items.map((i,x)=>`
-        <tr>
-          <td>${x+1}</td>
-          <td>${i.nama}</td>
-          <td>${i.qty}</td>
-          <td>${rupiah(i.harga)}</td>
-          <td>${rupiah(i.qty*i.harga)}</td>
-        </tr>`).join("")}
-    </table>
+    <div id="resultsContainer">
+      <div id="bingContainer" class="invoice-wrap">
+        <div class="inv-head">
+          <div>
+            <div class="inv-title">XYZ Technologies</div>
+            <div class="inv-sub" id="invTanggal">-</div>
+          </div>
+          <div class="inv-sub" id="invKasir">Kasir: -</div>
+        </div>
 
-    <h3>Total: ${rupiah(d.total)}</h3>
-    Bayar: ${rupiah(d.bayar)}<br>
-    Kembali: ${rupiah(d.kembali)}
+        <table>
+          <thead>
+            <tr><th>Barang</th><th>Qty</th><th>Harga</th><th>Sub</th></tr>
+          </thead>
+          <tbody id="invItems"></tbody>
+        </table>
 
-    <div class="footer">Terima kasih</div>
-  </div>`;
-}
+        <div class="inv-line"></div>
+        <div>Total: <span id="invTotal" class="inv-total">Rp 0</span></div>
+        <div>Uang: <span id="invUang">Rp 0</span></div>
+        <div>Kembalian: <span id="invKembali">Rp 0</span></div>
+        <div class="inv-footer">
+          Terima kasih atas pembelian Anda<br>
+          Barang yang sudah dibeli tidak dapat ditukar
+        </div>
+      </div>
+    </div>
+  </section>
 
-/* RIWAYAT */
-function renderHistory(){
-  const hist=JSON.parse(localStorage.getItem("history")||"[]");
-  historyList.innerHTML=hist.map(h=>`
-    <div class="card">
-      ${h.nomor}<br>${h.tanggal}<br>${rupiah(h.total)}
-    </div>`).join("");
-}
+</div>
 
-/* EXPORT JPG REAL */
-async function exportJPG() {
-  const element = document.getElementById("invoiceArea");
+<script>
+/* ====== STATE & STORAGE ====== */
+const KEY_BARANG = "daftarBarang";
+const KEY_LAST = "lastInvoice";
+let daftarBarang = JSON.parse(localStorage.getItem(KEY_BARANG) || "[]");
+let cart = {};
+let editId = null;
 
-  const canvas = await html2canvas(element, {
-    scale: 2,
-    backgroundColor: "#ffffff"
-  });
+/* ====== UTIL ====== */
+const formatRupiah = n => "Rp " + (n||0).toString().replace(/\B(?=(\d{3})+(?!\d))/g,".");
 
-  canvas.toBlob(function(blob) {
+/* ====== TAB ====== */
+const tabMenu = document.getElementById("tabMenu");
+const tabKasir = document.getElementById("tabKasir");
+const tabInvoice = document.getElementById("tabInvoice");
+document.getElementById("tabBtnMenu").onclick = ()=>showTab("menu");
+document.getElementById("tabBtnKasir").onclick = ()=>showTab("kasir");
+document.getElementById("tabBtnInvoice").onclick = ()=>{showTab("invoice"); renderInvoice();};
 
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "invoice_xyz.jpg";
-
-    document.body.appendChild(a);
-    a.click();
-
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
-  }, "image/jpeg", 0.95);
-}
-
-/* TABS */
-document.querySelectorAll(".tabs button").forEach(b=>{
-  b.onclick=()=>switchTab(b.dataset.tab);
-});
-function switchTab(id){
-  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
+function showTab(t){
+  tabMenu.classList.toggle("hidden", t!=="menu");
+  tabKasir.classList.toggle("hidden", t!=="kasir");
+  tabInvoice.classList.toggle("hidden", t!=="invoice");
   document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
-  document.querySelector(`[data-tab="${id}"]`).classList.add("active");
+  document.getElementById("tabBtn"+t.charAt(0).toUpperCase()+t.slice(1)).classList.add("active");
 }
 
+/* ====== MENU BARANG (ADD + EDIT + DELETE) ====== */
+const listBarang = document.getElementById("listBarang");
+function renderBarang(){
+  listBarang.innerHTML="";
+  daftarBarang.forEach(b=>{
+    const div = document.createElement("div");
+    div.className="card";
+    div.innerHTML = `
+      <h4>${b.nama}</h4>
+      <div class="price">${formatRupiah(b.harga)}</div>
+      <div class="flex">
+        <button class="btn warn">✏️ Edit</button>
+        <button class="btn danger">✖ Hapus</button>
+      </div>
+    `;
+    const [btnEdit, btnHapus] = div.querySelectorAll("button");
+    btnEdit.onclick = ()=>{
+      document.getElementById("namaBarang").value = b.nama;
+      document.getElementById("hargaBarang").value = b.harga;
+      editId = b.id;
+      document.getElementById("btnBatalEdit").style.display="inline-block";
+    };
+    btnHapus.onclick = ()=>{
+      if(confirm("Hapus barang ini?")){
+        daftarBarang = daftarBarang.filter(x=>x.id!==b.id);
+        saveBarang(); renderBarang(); renderKasir();
+      }
+    };
+    listBarang.appendChild(div);
+  });
+}
+function saveBarang(){ localStorage.setItem(KEY_BARANG, JSON.stringify(daftarBarang)); }
+
+document.getElementById("btnTambah").onclick = ()=>{
+  const nama = document.getElementById("namaBarang").value.trim();
+  const harga = +document.getElementById("hargaBarang").value;
+  if(!nama || !harga) return alert("Lengkapi data");
+
+  if(editId){
+    const item = daftarBarang.find(x=>x.id===editId);
+    item.nama = nama; item.harga = harga;
+    editId = null;
+    document.getElementById("btnBatalEdit").style.display="none";
+  }else{
+    daftarBarang.push({id:"b"+Date.now(), nama, harga});
+  }
+  saveBarang(); renderBarang(); renderKasir();
+  document.getElementById("namaBarang").value="";
+  document.getElementById("hargaBarang").value="";
+};
+document.getElementById("btnBatalEdit").onclick = ()=>{
+  editId=null;
+  document.getElementById("btnBatalEdit").style.display="none";
+  document.getElementById("namaBarang").value="";
+  document.getElementById("hargaBarang").value="";
+};
+
+/* ====== KASIR ====== */
+const gridKasir = document.getElementById("gridKasir");
+function renderKasir(){
+  gridKasir.innerHTML="";
+  daftarBarang.forEach(b=>{
+    const c=document.createElement("div");
+    c.className="card";
+    c.innerHTML=`<h4>${b.nama}</h4><div class="price">${formatRupiah(b.harga)}</div>`;
+    c.onclick=()=>{
+      cart[b.id] = cart[b.id] || {nama:b.nama,harga:b.harga,qty:0};
+      cart[b.id].qty++;
+      renderCart();
+    };
+    gridKasir.appendChild(c);
+  });
+}
+function renderCart(){
+  const tb = document.getElementById("tbodyCart");
+  tb.innerHTML="";
+  let total=0;
+  Object.values(cart).forEach(it=>{
+    const sub = it.harga*it.qty; total+=sub;
+    tb.innerHTML+=`<tr><td>${it.nama}</td><td>${formatRupiah(it.harga)}</td><td>${it.qty}</td><td>${formatRupiah(sub)}</td></tr>`;
+  });
+  document.getElementById("totalAkhir").textContent = formatRupiah(total);
+  const uang = +document.getElementById("uangPembeli").value || 0;
+  document.getElementById("kembalian").textContent = "Kembalian: "+formatRupiah(uang-total);
+}
+document.getElementById("uangPembeli").oninput = renderCart;
+
+document.getElementById("btnClearCart").onclick = ()=>{
+  if(confirm("Hapus data kasir (keranjang)?")){
+    cart={}; renderCart();
+  }
+};
+
+document.getElementById("btnBuatInvoice").onclick = ()=>{
+  const total = Object.values(cart).reduce((a,b)=>a+b.harga*b.qty,0);
+  const uang = +document.getElementById("uangPembeli").value || 0;
+  const kasir = document.getElementById("namaKasir").value || "Kasir 1";
+  const inv = {tanggal:new Date().toLocaleString("id-ID"), kasir, items:Object.values(cart), total, uang, kembali:uang-total};
+  localStorage.setItem(KEY_LAST, JSON.stringify(inv));
+  showTab("invoice"); renderInvoice();
+};
+
+/* ====== INVOICE ====== */
+function renderInvoice(){
+  const data = JSON.parse(localStorage.getItem(KEY_LAST) || "null");
+  if(!data) return;
+  document.getElementById("invTanggal").textContent = data.tanggal;
+  document.getElementById("invKasir").textContent = "Kasir: "+data.kasir;
+  document.getElementById("invItems").innerHTML = data.items.map(i=>
+    `<tr><td>${i.nama}</td><td>${i.qty}</td><td>${formatRupiah(i.harga)}</td><td>${formatRupiah(i.harga*i.qty)}</td></tr>`
+  ).join("");
+  document.getElementById("invTotal").textContent = formatRupiah(data.total);
+  document.getElementById("invUang").textContent = formatRupiah(data.uang);
+  document.getElementById("invKembali").textContent = formatRupiah(data.kembali);
+}
+document.getElementById("btnHapusInvoice").onclick = ()=>{
+  if(confirm("Hapus data invoice terakhir?")){
+    localStorage.removeItem(KEY_LAST);
+    alert("Invoice dihapus");
+  }
+};
+
+/* ====== EXPORT IMAGE (PAKAI KODE USER, TANPA TIMESTAMP) ====== */
+function exportToImage() {
+  let element = document.getElementById('resultsContainer');
+  let bingContainer = document.getElementById('bingContainer');
+
+  let originalStyle = element.style.overflow;
+  let originalDisplay = bingContainer.style.display;
+
+  bingContainer.style.display = "block";
+  element.style.overflow = "visible";  
+  element.style.width = "auto";  
+
+  html2canvas(element, {
+    scale: 2,
+    backgroundColor: null
+  }).then(canvas => {
+    let link = document.createElement('a');
+    link.href = canvas.toDataURL("image/png");
+    link.download = "invoice_xyz.png";
+    link.click();
+
+    element.style.overflow = originalStyle;
+    bingContainer.style.display = originalDisplay;
+  }).catch(error => {
+    console.error("Gagal mengexport gambar:", error);
+    alert("Gagal menyimpan gambar!");
+  });
+}
+
+/* ====== INIT ====== */
 renderBarang();
-renderHistory();
-tampilInvoice();
+renderKasir();
+renderCart();
+renderInvoice();
 </script>
+
+<!-- html2canvas inline CDN (boleh external 1 file diizinkan untuk engine render) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </body>
 </html>

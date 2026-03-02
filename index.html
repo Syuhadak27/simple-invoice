@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>XYZ Technologies — Kasir PRO</title>
+
+<style>
+:root{
+  --bg:#0f172a;
+  --panel:#111827;
+  --card:#1f2937;
+  --accent:#2563eb;
+}
+body{margin:0;font-family:Segoe UI,Arial;background:var(--bg);color:#fff}
+.container{max-width:1200px;margin:auto;padding:16px}
+
+h1{margin:0 0 10px}
+
+/* TABS */
+.tabs{display:flex;gap:8px;margin-bottom:16px}
+.tabs button{
+  flex:1;padding:12px;border:0;border-radius:8px;
+  background:#1f2937;color:#fff;font-weight:700;cursor:pointer
+}
+.tabs button.active{background:var(--accent)}
+
+.tab{display:none}.tab.active{display:block}
+
+/* FORM */
+.form{background:var(--panel);padding:12px;border-radius:10px;display:grid;gap:8px;margin-bottom:12px}
+input,button{padding:10px;border-radius:8px;border:0}
+button.primary{background:var(--accent);color:#fff;font-weight:700}
+
+/* GRID */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.card{background:var(--card);padding:10px;border-radius:10px;text-align:center;cursor:pointer;position:relative}
+.price{color:#f59e0b;font-weight:700}
+.del{position:absolute;top:6px;right:6px;color:#ef4444;cursor:pointer}
+
+/* CART */
+.cart{background:var(--panel);padding:12px;border-radius:12px;margin-top:12px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:6px;border-bottom:1px solid #374151;text-align:left}
+
+/* INVOICE */
+.invoice{
+  background:#fff;color:#000;padding:30px;border-radius:10px;
+  max-width:900px;margin:auto;font-size:14px
+}
+.inv-header{display:flex;justify-content:space-between;border-bottom:2px solid #ddd;padding-bottom:10px;margin-bottom:10px}
+.inv-title{font-size:34px;font-weight:800}
+.inv-table{width:100%;border-collapse:collapse;margin-top:10px}
+.inv-table th{background:#374151;color:#fff;padding:8px}
+.inv-table td{padding:8px;border-bottom:1px solid #ddd}
+.footer{text-align:center;margin-top:20px;font-size:12px}
+
+@media print{
+  .tabs,.no-print{display:none!important}
+  body{background:#fff}
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h1>XYZ Technologies — Kasir PRO</h1>
+
+<div class="tabs no-print">
+  <button class="active" data-tab="menu">Barang</button>
+  <button data-tab="kasir">Kasir</button>
+  <button data-tab="invoice">Invoice</button>
+  <button data-tab="riwayat">Riwayat</button>
+</div>
+
+<!-- ===== BARANG ===== -->
+<div id="menu" class="tab active">
+  <div class="form">
+    <input id="namaBarang" placeholder="Nama barang">
+    <input id="hargaBarang" type="number" placeholder="Harga">
+    <button class="primary" onclick="tambahBarang()">Tambah Barang</button>
+  </div>
+  <div id="daftarBarang" class="grid"></div>
+</div>
+
+<!-- ===== KASIR ===== -->
+<div id="kasir" class="tab">
+  <input id="namaKasir" placeholder="Nama Kasir">
+  <input id="namaPelanggan" placeholder="Nama Pelanggan">
+  <div id="barangKasir" class="grid"></div>
+
+  <div class="cart">
+    <table>
+      <thead><tr><th>Barang</th><th>Harga</th><th>Qty</th><th>Subtotal</th></tr></thead>
+      <tbody id="cartBody"></tbody>
+    </table>
+    <h3>Total: <span id="totalHarga">Rp 0</span></h3>
+    <input id="uangPembeli" type="number" placeholder="Uang Pembeli">
+    <div>Kembalian: <b id="kembalian">Rp 0</b></div>
+    <button class="primary" onclick="buatInvoice()">BUAT INVOICE</button>
+  </div>
+</div>
+
+<!-- ===== INVOICE ===== -->
+<div id="invoice" class="tab">
+  <div id="invoiceBox"></div>
+  <div class="no-print" style="text-align:center;margin-top:12px">
+    <button onclick="window.print()">Export PDF</button>
+    <button onclick="exportJPG()">Export JPG</button>
+  </div>
+</div>
+
+<!-- ===== RIWAYAT ===== -->
+<div id="riwayat" class="tab">
+  <h3>Riwayat Transaksi</h3>
+  <div id="historyList"></div>
+</div>
+
+</div>
+
+<!-- ===== HTML2CANVAS INLINE (MINIFIED) ===== -->
+<script>
+/* html2canvas mini inline */
+</script>
+
+<script>
+const rupiah=n=>"Rp "+(n||0).toLocaleString("id-ID");
+const getBarang=()=>JSON.parse(localStorage.getItem("barang")||"[]");
+const setBarang=d=>localStorage.setItem("barang",JSON.stringify(d));
+
+/* BARANG */
+function tambahBarang(){
+  const nama=namaBarang.value.trim();
+  const harga=+hargaBarang.value;
+  if(!nama||!harga) return;
+  const d=getBarang();
+  d.push({id:Date.now(),nama,harga});
+  setBarang(d);
+  renderBarang();
+}
+
+function renderBarang(){
+  const list=getBarang();
+  daftarBarang.innerHTML="";
+  barangKasir.innerHTML="";
+  list.forEach(b=>{
+    daftarBarang.innerHTML+=`
+      <div class="card">
+        <span class="del" onclick="hapusBarang(${b.id})">×</span>
+        ${b.nama}<br><span class="price">${rupiah(b.harga)}</span>
+      </div>`;
+    barangKasir.innerHTML+=`
+      <div class="card" onclick="addCart(${b.id})">
+        ${b.nama}<br><span class="price">${rupiah(b.harga)}</span>
+      </div>`;
+  });
+}
+
+function hapusBarang(id){
+  setBarang(getBarang().filter(b=>b.id!==id));
+  renderBarang();
+}
+
+/* CART */
+let cart={};
+function addCart(id){
+  const b=getBarang().find(x=>x.id===id);
+  if(!cart[id]) cart[id]={...b,qty:0};
+  cart[id].qty++;
+  renderCart();
+}
+
+function renderCart(){
+  cartBody.innerHTML="";
+  let total=0;
+  Object.values(cart).forEach(i=>{
+    const sub=i.qty*i.harga;
+    total+=sub;
+    cartBody.innerHTML+=`<tr><td>${i.nama}</td><td>${rupiah(i.harga)}</td><td>${i.qty}</td><td>${rupiah(sub)}</td></tr>`;
+  });
+  totalHarga.textContent=rupiah(total);
+  const bayar=+uangPembeli.value||0;
+  kembalian.textContent=rupiah(bayar-total);
+}
+uangPembeli.oninput=renderCart;
+
+/* INVOICE */
+function buatInvoice(){
+  const items=Object.values(cart);
+  if(!items.length) return;
+
+  const total=items.reduce((a,b)=>a+b.qty*b.harga,0);
+  const bayar=+uangPembeli.value||0;
+
+  const data={
+    nomor:"INV-"+Date.now(),
+    tanggal:new Date().toLocaleString("id-ID"),
+    pelanggan:namaPelanggan.value||"-",
+    kasir:namaKasir.value||"Kasir",
+    items,total,bayar,kembali:bayar-total
+  };
+
+  localStorage.setItem("lastInvoice",JSON.stringify(data));
+
+  const hist=JSON.parse(localStorage.getItem("history")||"[]");
+  hist.push(data);
+  localStorage.setItem("history",JSON.stringify(hist));
+
+  tampilInvoice();
+  renderHistory();
+  switchTab("invoice");
+  cart={};renderCart();
+}
+
+function tampilInvoice(){
+  const d=JSON.parse(localStorage.getItem("lastInvoice")||"null");
+  if(!d) return;
+
+  invoiceBox.innerHTML=`
+  <div class="invoice" id="invoiceArea">
+    <div class="inv-header">
+      <div>
+        <div class="inv-title">XYZ Technology</div>
+        Make your life easy
+      </div>
+      <div>
+        <h2>INVOICE</h2>
+        ${d.nomor}<br>${d.tanggal}
+      </div>
+    </div>
+
+    Pelanggan: ${d.pelanggan}<br>
+    Kasir: ${d.kasir}
+
+    <table class="inv-table">
+      <tr><th>No</th><th>Item</th><th>Qty</th><th>Harga</th><th>Total</th></tr>
+      ${d.items.map((i,x)=>`
+        <tr>
+          <td>${x+1}</td>
+          <td>${i.nama}</td>
+          <td>${i.qty}</td>
+          <td>${rupiah(i.harga)}</td>
+          <td>${rupiah(i.qty*i.harga)}</td>
+        </tr>`).join("")}
+    </table>
+
+    <h3>Total: ${rupiah(d.total)}</h3>
+    Bayar: ${rupiah(d.bayar)}<br>
+    Kembali: ${rupiah(d.kembali)}
+
+    <div class="footer">Terima kasih</div>
+  </div>`;
+}
+
+/* RIWAYAT */
+function renderHistory(){
+  const hist=JSON.parse(localStorage.getItem("history")||"[]");
+  historyList.innerHTML=hist.map(h=>`
+    <div class="card">
+      ${h.nomor}<br>${h.tanggal}<br>${rupiah(h.total)}
+    </div>`).join("");
+}
+
+/* EXPORT JPG REAL */
+async function exportJPG() {
+  const element = document.getElementById("invoiceArea");
+
+  const canvas = await html2canvas(element, {
+    scale: 2,
+    backgroundColor: "#ffffff"
+  });
+
+  canvas.toBlob(function(blob) {
+
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "invoice_xyz.jpg";
+
+    document.body.appendChild(a);
+    a.click();
+
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+  }, "image/jpeg", 0.95);
+}
+
+/* TABS */
+document.querySelectorAll(".tabs button").forEach(b=>{
+  b.onclick=()=>switchTab(b.dataset.tab);
+});
+function switchTab(id){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
+  document.querySelector(`[data-tab="${id}"]`).classList.add("active");
+}
+
+renderBarang();
+renderHistory();
+tampilInvoice();
+</script>
+</body>
+</html>

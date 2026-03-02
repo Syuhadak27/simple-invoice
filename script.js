@@ -1,5 +1,6 @@
 /* ====== STATE & STORAGE ====== */
-let daftarBarang = JSON.parse(localStorage.getItem("daftarBarang") || "[]");
+const KEY_BARANG = "daftarBarang"; // Mendefinisikan key agar tidak error
+let daftarBarang = JSON.parse(localStorage.getItem(KEY_BARANG) || "[]");
 let cart = {};
 let editId = null;
 const formatRupiah = n => "Rp " + (n||0).toString().replace(/\B(?=(\d{3})+(?!\d))/g,".");
@@ -12,15 +13,14 @@ function showTab(t){
   document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
   document.getElementById("tabBtn"+t.charAt(0).toUpperCase()+t.slice(1)).classList.add("active");
 }
+
 document.getElementById("tabBtnMenu").onclick = ()=>showTab("menu");
 document.getElementById("tabBtnKasir").onclick = ()=>showTab("kasir");
 document.getElementById("tabBtnInvoice").onclick = ()=>{showTab("invoice"); renderInvoice();};
+
 document.getElementById("btnHapusInvoice").onclick = () => {
   if (confirm("Hapus data invoice terakhir dari memori?")) {
-    // 1. Hapus dari penyimpanan permanen (LocalStorage)
     localStorage.removeItem("lastInvoice");
-    
-    // 2. Kosongkan tampilan di layar secara instan
     document.getElementById("invTanggal").textContent = "-";
     document.getElementById("invNomor").textContent = "INV: -";
     document.getElementById("invKasir").textContent = "Kasir: -";
@@ -28,14 +28,13 @@ document.getElementById("btnHapusInvoice").onclick = () => {
     document.getElementById("invTotal").textContent = "Rp 0";
     document.getElementById("invUang").textContent = "Rp 0";
     document.getElementById("invKembali").textContent = "Rp 0";
-    
     alert("Data invoice telah dibersihkan!");
   }
 };
 
 /* ====== MENU LOGIC ====== */
-/* ====== MENU BARANG (ADD + EDIT + DELETE) ====== */
 const listBarang = document.getElementById("listBarang");
+
 function renderBarang(){
   listBarang.innerHTML="";
   daftarBarang.forEach(b=>{
@@ -48,7 +47,10 @@ function renderBarang(){
     listBarang.appendChild(div);
   });
 }
-function saveBarang(){ localStorage.setItem(KEY_BARANG, JSON.stringify(daftarBarang)); }
+
+function saveBarang(){ 
+    localStorage.setItem(KEY_BARANG, JSON.stringify(daftarBarang)); 
+}
 
 document.getElementById("btnTambah").onclick = ()=>{
   const nama = document.getElementById("namaBarang").value.trim();
@@ -67,11 +69,55 @@ document.getElementById("btnTambah").onclick = ()=>{
   document.getElementById("namaBarang").value="";
   document.getElementById("hargaBarang").value="";
 };
-document.getElementById("btnBatalEdit").onclick = ()=>{
-  editId=null;
-  document.getElementById("btnBatalEdit").style.display="none";
-  document.getElementById("namaBarang").value="";
-  document.getElementById("hargaBarang").value="";
+
+/* ====== 🔥 FITUR EXPORT & IMPORT JSON 🔥 ====== */
+
+// 1. Logika Export
+document.getElementById("btnExport").onclick = () => {
+  if (daftarBarang.length === 0) return alert("Tidak ada data untuk diekspor");
+  
+  const dataStr = JSON.stringify(daftarBarang, null, 2);
+  const blob = new Blob([dataStr], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `Data_Barang_XYZ_${new Date().getTime()}.json`;
+  link.click();
+  URL.revokeObjectURL(url);
+};
+
+// 2. Logika Import (Memicu klik input file)
+document.getElementById("btnImport").onclick = () => {
+  document.getElementById("fileImport").click();
+};
+
+// 3. Logika Membaca File JSON
+document.getElementById("fileImport").onchange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    try {
+      const parsedData = JSON.parse(event.target.result);
+      if (Array.isArray(parsedData)) {
+        if (confirm("Data saat ini akan ditimpa dengan data dari file. Lanjutkan?")) {
+          daftarBarang = parsedData;
+          saveBarang(); // Simpan ke LocalStorage
+          renderBarang(); // Refresh UI Menu
+          renderKasir(); // Refresh UI Kasir
+          alert("✅ Data berhasil di-import!");
+        }
+      } else {
+        alert("❌ Format file tidak valid!");
+      }
+    } catch (err) {
+      alert("❌ Gagal membaca file JSON!");
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = ""; // Reset agar bisa pilih file yang sama lagi
 };
 
 /* ====== KASIR & SEARCH ====== */
@@ -104,24 +150,50 @@ function renderCart(){
   const bayar = +document.getElementById("uangPembeli").value || 0;
   document.getElementById("kembalian").textContent = "Kembalian: "+formatRupiah(bayar-total);
 }
+
 document.getElementById("uangPembeli").oninput = renderCart;
 document.getElementById("btnClearCart").onclick = ()=>{ if(confirm("Hapus keranjang?")){ cart={}; renderCart(); renderKasir(); } };
 
 /* ====== INVOICE LOGIC ====== */
-document.getElementById("btnBuatInvoice").onclick = ()=>{
+document.getElementById("btnBuatInvoice").onclick = () => {
   const items = Object.values(cart);
-  if(!items.length) return alert("Keranjang kosong");
-  const total = items.reduce((a,b)=>a+(b.harga*b.qty),0);
+  if (!items.length) return alert("Keranjang kosong");
+
+  const total = items.reduce((a, b) => a + (b.harga * b.qty), 0);
   const uang = +document.getElementById("uangPembeli").value || 0;
+  
+  // Ambil input kasir
+  const namaKasir = document.getElementById("namaKasir").value || "Kasir1";
+  
+  // LOGIKA FORMAT TANGGAL YYYYMMDD-HHMM
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0'); // Bulan dimulai dari 0
+  const dd = String(now.getDate()).padStart(2, '0');
+  const hh = String(now.getHours()).padStart(2, '0');
+  const min = String(now.getMinutes()).padStart(2, '0');
+  
+  const timestamp = `${yyyy}${mm}${dd}-${hh}${min}`;
+  
+  // Gabungkan format: KYZ-{kasir}-YYYYMMDD-HHMM
+  // Menghapus spasi pada nama kasir agar format nomor invoice tetap rapi
+  const cleanKasir = namaKasir.replace(/\s+/g, ''); 
+  const nomorInvoice = `KYZ-${cleanKasir}-${timestamp}`;
+
   const inv = {
-    tanggal: new Date().toLocaleDateString("id-ID", {day:'2-digit', month:'short', year:'numeric'}),
-    jam: new Date().toLocaleTimeString("id-ID"),
-    kasir: document.getElementById("namaKasir").value || "Kasir 1",
-    nomor: "XYZ-" + Date.now().toString().slice(-6),
-    items, total, uang, kembali: uang-total
+    tanggal: now.toLocaleDateString("id-ID", { day: '2-digit', month: 'short', year: 'numeric' }),
+    jam: now.toLocaleTimeString("id-ID"),
+    kasir: namaKasir,
+    nomor: nomorInvoice,
+    items,
+    total,
+    uang,
+    kembali: uang - total
   };
+
   localStorage.setItem("lastInvoice", JSON.stringify(inv));
-  showTab("invoice"); renderInvoice();
+  showTab("invoice");
+  renderInvoice();
 };
 
 function renderInvoice(){

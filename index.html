@@ -294,6 +294,7 @@ tfoot td{font-weight:700}
           <div>
             <div class="inv-title">XYZ Technologies</div>
             <div class="inv-sub" id="invTanggal">-</div>
+            <div class="inv-sub" id="invNomor">INV: -</div>
           </div>
           <div class="inv-sub" id="invKasir">Kasir: -</div>
         </div>
@@ -457,7 +458,18 @@ document.getElementById("btnBuatInvoice").onclick = ()=>{
   const total = Object.values(cart).reduce((a,b)=>a+b.harga*b.qty,0);
   const uang = +document.getElementById("uangPembeli").value || 0;
   const kasir = document.getElementById("namaKasir").value || "Kasir 1";
-  const inv = {tanggal:new Date().toLocaleString("id-ID"), kasir, items:Object.values(cart), total, uang, kembali:uang-total};
+  const items = Object.values(cart);
+const nomor = generateInvoiceNumberPro();
+
+const inv = {
+  tanggal:new Date().toLocaleString("id-ID"),
+  kasir,
+  nomor,
+  items,
+  total,
+  uang,
+  kembali:uang-total
+};
   localStorage.setItem(KEY_LAST, JSON.stringify(inv));
   showTab("invoice"); renderInvoice();
 };
@@ -468,6 +480,7 @@ function renderInvoice(){
   if(!data) return;
   document.getElementById("invTanggal").textContent = data.tanggal;
   document.getElementById("invKasir").textContent = "Kasir: "+data.kasir;
+  document.getElementById("invNomor").textContent = "INV: " + data.nomor;
   document.getElementById("invItems").innerHTML = data.items.map(i=>
     `<tr><td>${i.nama}</td><td>${i.qty}</td><td>${formatRupiah(i.harga)}</td><td>${formatRupiah(i.harga*i.qty)}</td></tr>`
   ).join("");
@@ -510,6 +523,45 @@ function exportToImage() {
     alert("Gagal menyimpan gambar!");
   });
 }
+/*=========== GENERATE =========*/
+function generateInvoiceNumber(kasir, items){
+  const now = new Date();
+
+  const mm = String(now.getMonth()+1).padStart(2,"0");
+  const dd = String(now.getDate()).padStart(2,"0");
+  const yyyy = now.getFullYear();
+
+  const jumlahItem = items.reduce((a,b)=>a+b.qty,0);
+
+  return `${jumlahItem}/${kasir}/${mm}${dd}${yyyy}`;
+}
+
+function generateInvoiceNumberPro(){
+  const now = new Date();
+
+  const dd = String(now.getDate()).padStart(2,"0");
+  const mm = String(now.getMonth()+1).padStart(2,"0");
+  const yy = String(now.getFullYear()).slice(-2);
+
+  const todayKey = dd+mm+yy;
+
+  const lastDate = localStorage.getItem("inv_date");
+  let counter = parseInt(localStorage.getItem("inv_counter") || "0");
+
+  if(lastDate !== todayKey){
+    counter = 1; // reset tiap hari
+  }else{
+    counter++;
+  }
+
+  localStorage.setItem("inv_date", todayKey);
+  localStorage.setItem("inv_counter", counter);
+
+  const nomor = String(counter).padStart(4,"0");
+
+  return `INV-XYZ-${todayKey}-${nomor}`;
+}
+
 /* ====== EXPORT JSON ====== */
 document.getElementById("btnExport").onclick = () => {
   if(daftarBarang.length === 0) {

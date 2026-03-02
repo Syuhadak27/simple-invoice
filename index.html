@@ -243,12 +243,18 @@ tfoot td{font-weight:700}
       <input id="hargaBarang" type="number" placeholder="Harga (wajib)">
       <div class="flex">
         <button class="btn primary" id="btnTambah">Tambah Barang</button>
+        <div class="flex">
+  <button class="btn primary" id="btnExport">Export Data</button>
+  <button class="btn warn" id="btnImport">Import Data</button>
+  <input type="file" id="fileImport" accept=".json" style="display:none">
+</div>
         <button class="btn ghost" id="btnBatalEdit" style="display:none">Batal Edit</button>
       </div>
       <div class="note">Klik tombol ✏️ pada kartu untuk edit nama & harga.</div>
     </div>
     <div id="listBarang" class="grid"></div>
   </section>
+  
 
   <!-- TAB KASIR -->
   <section id="tabKasir" class="hidden">
@@ -504,15 +510,66 @@ function exportToImage() {
     alert("Gagal menyimpan gambar!");
   });
 }
+/* ====== EXPORT JSON ====== */
+document.getElementById("btnExport").onclick = () => {
+  if(daftarBarang.length === 0) {
+    alert("Tidak ada data untuk diexport");
+    return;
+  }
+
+  const dataStr = JSON.stringify(daftarBarang, null, 2);
+  const blob = new Blob([dataStr], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "data_barang_xyz.json";
+  a.click();
+
+  URL.revokeObjectURL(url);
+};
+
+/* ====== IMPORT JSON ====== */
+document.getElementById("btnImport").onclick = () => {
+  document.getElementById("fileImport").click();
+};
+
+document.getElementById("fileImport").onchange = (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    try{
+      const data = JSON.parse(evt.target.result);
+
+      if(!Array.isArray(data)) throw "Format salah";
+
+      if(!confirm("Import akan mengganti data lama. Lanjutkan?")) return;
+
+      daftarBarang = data;
+      saveBarang();
+      renderBarang();
+      renderKasir();
+
+      alert("Import berhasil!");
+    }catch(err){
+      alert("File tidak valid!");
+    }
+  };
+  reader.readAsText(file);
+};
 
 /* ====== INIT ====== */
 renderBarang();
 renderKasir();
 renderCart();
 renderInvoice();
+
 </script>
 
 <!-- html2canvas inline CDN (boleh external 1 file diizinkan untuk engine render) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 </body>
 </html>
